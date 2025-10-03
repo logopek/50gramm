@@ -3,7 +3,7 @@ package ni.shikatu.a50gramm
 import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 
-abstract class BaseComponent{
+abstract class BaseComponent: BaseModel(){
 	@SuppressLint("ComposableNaming")
 	@Composable
 	fun create(){
@@ -11,7 +11,7 @@ abstract class BaseComponent{
 		Present()
 	}
 
-	abstract fun newComponent()
+	open fun newComponent() {}
 	@Composable
 	abstract fun Present()
 }

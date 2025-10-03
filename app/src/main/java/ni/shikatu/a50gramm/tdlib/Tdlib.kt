@@ -8,8 +8,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import ni.shikatu.a50gramm.BuildConfig
@@ -26,6 +28,8 @@ object Tdlib {
 	private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 	private val listeners = mutableListOf<UpdateListener>()
 
+	var me: TdApi.User? = null;
+
 	fun subscribe(listener: UpdateListener){
 		Log.d("TDLib", "Subscribing listener: ${listener.javaClass.simpleName}")
 		listeners.add(listener)
@@ -37,7 +41,22 @@ object Tdlib {
 
 	private val _updates = MutableSharedFlow<TdApi.Object>()
 	val updatesFlow = _updates.asSharedFlow()
+	suspend fun getMe() = suspendCancellableCoroutine { cont ->
+		client?.send(TdApi.GetMe(), { result ->
+			if (!cont.isCompleted) {
+				@Suppress("UNCHECKED_CAST")
+				cont.resume(result as TdApi.User)
+			}
+		}, { error ->
+			if (!cont.isCompleted) {
+				cont.resumeWithException(RuntimeException(error.message))
+			}
+		})
+	}
 
+	fun getMe(handler: Client.ResultHandler?){
+		send(TdApi.GetMe(), handler)
+	}
 	fun startClient(context: Context) {
 		if (client == null) {
 			Log.d("TDLib", "Starting client initialization...")
@@ -54,7 +73,11 @@ object Tdlib {
 
 				if (obj is TdApi.UpdateAuthorizationState) {
 					Log.d("TDLib", "Authorization State Changed: ${obj.authorizationState.javaClass.simpleName}")
+					if(obj.authorizationState is TdApi.AuthorizationStateReady){
+						scope.launch { me = getMe() }
+					}
 				}
+
 			}, null, null)
 
 			send(TdApi.SetLogStream(TdApi.LogStreamFile(context.filesDir.absolutePath + "/tdlog.txt", 1024 * 1024 * 5, false))) {
@@ -101,6 +124,9 @@ object Tdlib {
 		}
 	}
 
+	fun dowloadFile(fileId: Int, priority: Int = 16,handler: Client.ResultHandler?) {
+		client?.send(TdApi.DownloadFile(fileId, priority, 0, 0, false), handler)
+	}
 	@OptIn(ExperimentalCoroutinesApi::class)
 	suspend fun <T : TdApi.Object> sendBlocking(query: TdApi.Function<*>): T =
 		suspendCancellableCoroutine { cont ->
@@ -140,6 +166,16 @@ object Tdlib {
 				is TdApi.UpdateChatLastMessage -> onChatLastMessageUpdate(update)
 				is TdApi.UpdateNewMessage -> onChatNewMessageUpdate(update)
 				is TdApi.UpdateChatTitle -> onChatTitleUpdate(update)
+			}
+		}
+
+	}
+
+	interface FileUpdateListener: UpdateListener{
+		fun onFileUpdate(update: TdApi.UpdateFile)
+		override fun onUpdate(update: TdApi.Update) {
+			if(update is TdApi.UpdateFile){
+				onFileUpdate(update)
 			}
 		}
 

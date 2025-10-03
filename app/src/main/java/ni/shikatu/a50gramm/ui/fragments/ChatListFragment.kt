@@ -6,12 +6,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import ni.shikatu.a50gramm.BaseFragment
@@ -26,10 +28,12 @@ class ChatListFragment: BaseFragment(), Tdlib.ChatUpdateListener {
 	private val viewModel = ChatListViewModel
 	override fun onCreate() {
 		viewModel.requestChats()
+		requestActionBar()
 	}
 
 	@Composable
 	override fun Present(paddingValues: PaddingValues) {
+		actionBar.setTitle("Hiii")
 		val state = rememberLazyListState()
 		val chats = remember {
 			derivedStateOf {
@@ -40,6 +44,7 @@ class ChatListFragment: BaseFragment(), Tdlib.ChatUpdateListener {
 		LazyColumn(modifier = Modifier.padding(paddingValues), state = state) {
 			items(chats.value){ chat ->
 				ChatDoubleView(chat).create()
+				HorizontalDivider(thickness = 1.dp)
 			}
 		}
 	}

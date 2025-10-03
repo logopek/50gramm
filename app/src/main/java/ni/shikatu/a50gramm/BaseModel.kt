@@ -19,4 +19,8 @@ abstract class BaseModel {
 			f()
 		}
 	}
+
+	fun presentFragment(fragment: BaseFragment){
+		MainActivity.getInstance().presentFragment(fragment)
+	}
 }

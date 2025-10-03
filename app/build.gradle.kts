@@ -53,6 +53,7 @@ dependencies {
 	implementation(project(":tdlib"))
 	implementation("androidx.activity:activity-compose:1.11.0")
 	implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
+	implementation("io.coil-kt:coil-compose:2.7.0")
 	implementation(libs.androidx.core.ktx)
 	implementation(libs.androidx.lifecycle.runtime.ktx)
 	implementation(libs.androidx.activity.compose)

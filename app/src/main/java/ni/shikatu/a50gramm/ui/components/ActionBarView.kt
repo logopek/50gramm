@@ -1,14 +1,17 @@
 package ni.shikatu.a50gramm.ui.components
 
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import ni.shikatu.a50gramm.BaseComponent
 
-class ActionBar: BaseComponent() {
+class ActionBarView: BaseComponent() {
 	private val title = mutableStateOf("")
 	private val subtitle = mutableStateOf("")
 	private val avatar = mutableStateOf("")
@@ -32,7 +35,7 @@ class ActionBar: BaseComponent() {
 		val title by this.title
 		val subtitle by this.subtitle
 		val avatar by this.avatar
-		TopAppBar(
+		TopAppBar(modifier = Modifier.height(84.dp),
 			title = {
 				Text(title)
 			},

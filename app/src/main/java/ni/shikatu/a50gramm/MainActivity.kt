@@ -18,7 +18,7 @@ import androidx.compose.ui.Modifier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import ni.shikatu.a50gramm.tdlib.Tdlib
-import ni.shikatu.a50gramm.ui.components.ActionBar
+import ni.shikatu.a50gramm.ui.components.ActionBarView
 import ni.shikatu.a50gramm.ui.fragments.ChatListFragment
 import ni.shikatu.a50gramm.ui.fragments.LoginFragment
 import ni.shikatu.a50gramm.ui.theme._50grammTheme
@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
 
 	private val fragmentContainer = FragmentContainer()
 
-	private val actionBar = ActionBar()
+	private val actionBarView = ActionBarView()
 	companion object {
 		private var instance: MainActivity? = null
 		fun getInstance() = if(instance == null) MainActivity() else instance!!
@@ -46,6 +46,10 @@ class MainActivity : ComponentActivity() {
 		lastFragment = fragment
 	}
 
+	fun getActionBarView(): ActionBarView{
+		return actionBarView
+	}
+
 	fun onBackNavigate(){
 		if(_fragmentStack.size > 1){
 			_fragmentStack.removeAt(_fragmentStack.size - 1)
@@ -59,9 +63,9 @@ class MainActivity : ComponentActivity() {
 		super.onCreate(savedInstanceState)
 		instance = this
 		enableEdgeToEdge()
-		val dispatcher = OnBackPressedDispatcher()
+		val dispatcher = onBackPressedDispatcher
 		dispatcher.addCallback {
-			if((lastFragment?.overrideBackPressed() ?: false)){
+			if(!(lastFragment?.overrideBackPressed() ?: false)){
 				onBackNavigate()
 			}
 		}
@@ -73,22 +77,16 @@ class MainActivity : ComponentActivity() {
 					coroutineScope.launch(Dispatchers.IO) {
 						val t = Tdlib.sendBlocking(TdApi.GetAuthorizationState()) as TdApi.AuthorizationState
 						when(t){
-							is TdApi.AuthorizationStateWaitPhoneNumber -> {
-								presentFragment(LoginFragment())
-							}
-							is TdApi.AuthorizationStateWaitCode -> {
-								presentFragment(LoginFragment())
-							}
-							is TdApi.AuthorizationStateWaitPassword -> {
-								presentFragment(LoginFragment())
-							}
 							is TdApi.AuthorizationStateReady -> {
 								presentFragment(ChatListFragment())
+							}
+							else -> {
+								presentFragment(LoginFragment())
 							}
 						}
 					}
 				}
-				Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+				Scaffold(modifier = Modifier.fillMaxSize(), topBar = {actionBarView.create()}) { innerPadding ->
 					currentFragment?.let {
 						fragmentContainer.DrawFragment(currentFragment!!, innerPadding)
 					}
