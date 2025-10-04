@@ -20,6 +20,7 @@ import ni.shikatu.a50gramm.BaseModel
 import ni.shikatu.a50gramm.tdlib.Tdlib
 import ni.shikatu.a50gramm.ui.components.MessageInput
 import ni.shikatu.a50gramm.ui.components.MessageView
+import ni.shikatu.a50gramm.utlis.ensureType
 import org.drinkless.tdlib.TdApi
 
 class ChatScreenFragment(val chat: TdApi.Chat): BaseFragment(), Tdlib.ChatUpdateListener {
@@ -65,10 +66,8 @@ class ChatScreenFragment(val chat: TdApi.Chat): BaseFragment(), Tdlib.ChatUpdate
 			runOnDispatchersThread {
 				//TODO: тдлиб не хочет возвращать больше одного сообщения на первый запрос
 				val messagesNew = Tdlib.sendBlocking<TdApi.Messages>(TdApi.GetChatHistory(chatId, 0, 0, limit, false))
-				runOnUIThread {
-					messagesNew?.messages.let {
-						messages.value = messages.value + messagesNew!!.messages
-					}
+				messagesNew.ensureType<TdApi.Messages> { it ->
+					messages.value = messages.value + it.messages
 				}
 			}
 		}

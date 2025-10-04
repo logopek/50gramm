@@ -29,12 +29,10 @@ class MessagePhotoView(val photo: TdApi.MessagePhoto): BaseComponent(), Tdlib.Fi
 
 	fun checkAndRequestPhoto() {
 		val currentFile = photo.photo.sizes.last()
-
 		if (currentFile.photo.local.isDownloadingCompleted) {
 			photoFile.value = currentFile.photo
 			return
 		}
-
 		Tdlib.dowloadFile(currentFile.photo.id, 32) {}
 	}
 	@Composable
