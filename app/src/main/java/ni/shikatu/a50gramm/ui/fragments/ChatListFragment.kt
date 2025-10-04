@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -33,7 +32,7 @@ class ChatListFragment: BaseFragment(), Tdlib.ChatUpdateListener {
 
 	@Composable
 	override fun Present(paddingValues: PaddingValues) {
-		actionBar.setTitle("Hiii")
+		actionBar.setTitle("Chat list")
 		val state = rememberLazyListState()
 		val chats = remember {
 			derivedStateOf {
@@ -74,14 +73,14 @@ class ChatListFragment: BaseFragment(), Tdlib.ChatUpdateListener {
 		fun requestChats(){
 			runOnDispatchersThread {
 				val chatIdsResponse = Tdlib.sendBlocking<TdApi.Chats>(TdApi.GetChats(TdApi.ChatListMain(), 1000))
-				val deferredChats = chatIdsResponse.chatIds.map { chatId ->
+				val deferredChats = chatIdsResponse?.chatIds?.map { chatId ->
 					async {
 						Tdlib.sendBlocking<TdApi.Chat>(TdApi.GetChat(chatId))
 					}
 				}
-				val newChatList = deferredChats.awaitAll()
+				val newChatList = deferredChats?.awaitAll()?.filterNotNull()
 				runOnUIThread {
-					chats.value = newChatList
+					chats.value = newChatList ?: listOf()
 				}
 			}
 

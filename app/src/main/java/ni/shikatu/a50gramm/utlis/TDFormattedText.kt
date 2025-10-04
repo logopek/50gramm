@@ -33,7 +33,6 @@ fun TdApi.FormattedText.toAnnotatedString(): AnnotatedString = buildAnnotatedStr
 		val annotationEnd = length
 
 		when (entity.type.constructor) {
-			// --- Стили ---
 			TdApi.TextEntityTypeBold.CONSTRUCTOR -> {
 				addStyle(SpanStyle(fontWeight = FontWeight.Bold), annotationStart, annotationEnd)
 			}
@@ -90,10 +89,10 @@ fun TdApi.FormattedText.toAnnotatedString(): AnnotatedString = buildAnnotatedStr
 				addStringAnnotation("MENTION", entityText, annotationStart, annotationEnd)
 			}
 			TdApi.TextEntityTypeHashtag.CONSTRUCTOR -> {
-				addStringAnnotation("HASHTAG", entityText.substring(1), annotationStart, annotationEnd) // Убираем #
+				addStringAnnotation("HASHTAG", entityText.substring(1), annotationStart, annotationEnd)
 			}
 			TdApi.TextEntityTypeCashtag.CONSTRUCTOR -> {
-				addStringAnnotation("CASHTAG", entityText.substring(1), annotationStart, annotationEnd) // Убираем $
+				addStringAnnotation("CASHTAG", entityText.substring(1), annotationStart, annotationEnd)
 			}
 			TdApi.TextEntityTypeBotCommand.CONSTRUCTOR -> {
 				addStringAnnotation("BOT_COMMAND", entityText, annotationStart, annotationEnd)

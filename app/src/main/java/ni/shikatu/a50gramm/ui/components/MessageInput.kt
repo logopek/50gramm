@@ -18,12 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,9 +32,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import ni.shikatu.a50gramm.BaseComponent
+import ni.shikatu.a50gramm.R
 import org.drinkless.tdlib.TdApi
 
 class MessageInput(val chat: TdApi.Chat, val threadId: Long = 0, val onSend: (TdApi.InputMessageContent) -> Unit): BaseComponent() {
@@ -51,7 +48,7 @@ class MessageInput(val chat: TdApi.Chat, val threadId: Long = 0, val onSend: (Td
 	@Composable
 	override fun Present() {
 		val interactionSource = remember { MutableInteractionSource() }
-		val onAttachClick = null;
+		val onAttachClick = null
 
 
 		Row(
@@ -68,7 +65,7 @@ class MessageInput(val chat: TdApi.Chat, val threadId: Long = 0, val onSend: (Td
 						.padding(4.dp)
 				) {
 					Icon(
-						imageVector = Icons.Default.Add,
+						painter = painterResource(R.drawable.attach_file_24dp),
 						contentDescription = "Прикрепить файл",
 						tint = MaterialTheme.colorScheme.primary
 					)
@@ -124,7 +121,7 @@ class MessageInput(val chat: TdApi.Chat, val threadId: Long = 0, val onSend: (Td
 						enabled = text.value.isNotBlank()
 					) {
 						Icon(
-							imageVector = Icons.AutoMirrored.Filled.Send,
+							painter = painterResource(R.drawable.send_24dp),
 							contentDescription = "Отправить",
 							tint = MaterialTheme.colorScheme.onPrimary
 						)
@@ -135,7 +132,7 @@ class MessageInput(val chat: TdApi.Chat, val threadId: Long = 0, val onSend: (Td
 						modifier = Modifier.fillMaxSize()
 					) {
 						Icon(
-							imageVector = Icons.Default.ThumbUp,
+							painter = painterResource(R.drawable.mic_24dp),
 							contentDescription = "Голосовое сообщение",
 							tint = MaterialTheme.colorScheme.primary
 						)
@@ -147,7 +144,7 @@ class MessageInput(val chat: TdApi.Chat, val threadId: Long = 0, val onSend: (Td
 	}
 
 	fun generateInputContent(): TdApi.InputMessageContent{
-		return TdApi.InputMessageText(TdApi.FormattedText(text.value, null), null, true);
+		return TdApi.InputMessageText(TdApi.FormattedText(text.value, null), null, true)
 	}
 
 	fun getDraft(){

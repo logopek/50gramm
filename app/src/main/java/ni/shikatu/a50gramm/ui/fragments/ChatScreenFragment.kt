@@ -25,8 +25,8 @@ import org.drinkless.tdlib.TdApi
 class ChatScreenFragment(val chat: TdApi.Chat): BaseFragment(), Tdlib.ChatUpdateListener {
 	val viewModel = ChatScreenViewModel
 	override fun onCreate() {
-		Tdlib.subscribe(this)
 		viewModel.requestMessages(chat.id)
+		requestActionBar()?.setTitle(chat.title)
 	}
 	@Composable
 	override fun Present(paddingValues: PaddingValues) {
@@ -66,7 +66,9 @@ class ChatScreenFragment(val chat: TdApi.Chat): BaseFragment(), Tdlib.ChatUpdate
 				//TODO: тдлиб не хочет возвращать больше одного сообщения на первый запрос
 				val messagesNew = Tdlib.sendBlocking<TdApi.Messages>(TdApi.GetChatHistory(chatId, 0, 0, limit, false))
 				runOnUIThread {
-					messages.value = messages.value + messagesNew.messages
+					messagesNew?.messages.let {
+						messages.value = messages.value + messagesNew!!.messages
+					}
 				}
 			}
 		}

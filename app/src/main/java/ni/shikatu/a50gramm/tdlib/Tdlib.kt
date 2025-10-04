@@ -128,16 +128,17 @@ object Tdlib {
 		client?.send(TdApi.DownloadFile(fileId, priority, 0, 0, false), handler)
 	}
 	@OptIn(ExperimentalCoroutinesApi::class)
-	suspend fun <T : TdApi.Object> sendBlocking(query: TdApi.Function<*>): T =
+	suspend fun <T : TdApi.Object> sendBlocking(query: TdApi.Function<*>): T? =
 		suspendCancellableCoroutine { cont ->
 			client?.send(query, { result ->
 				if (!cont.isCompleted) {
 					@Suppress("UNCHECKED_CAST")
-					cont.resume(result as T)
+					cont.resume(result as? T)
 				}
 			}, { error ->
 				if (!cont.isCompleted) {
 					cont.resumeWithException(RuntimeException(error.message))
+					Log.d("TDLib", "Error received on sendBlocking: ${error.message}. Query: $query")
 				}
 			})
 		}

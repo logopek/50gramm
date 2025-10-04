@@ -2,7 +2,6 @@ package ni.shikatu.a50gramm.ui.components
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import org.drinkless.tdlib.TdApi

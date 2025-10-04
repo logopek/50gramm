@@ -15,17 +15,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
-import androidx.lifecycle.ViewModel
 import ni.shikatu.a50gramm.BaseFragment
-import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import ni.shikatu.a50gramm.BaseModel
 import ni.shikatu.a50gramm.MainActivity
 import ni.shikatu.a50gramm.tdlib.Tdlib
 import org.drinkless.tdlib.TdApi
-import org.drinkless.tdlib.TdApi.*
+import org.drinkless.tdlib.TdApi.CheckAuthenticationCode
+import org.drinkless.tdlib.TdApi.CheckAuthenticationPassword
+import org.drinkless.tdlib.TdApi.SetAuthenticationPhoneNumber
 
 class LoginFragment: BaseFragment(), Tdlib.AuthorizationListener {
 	private val viewModel = LoginViewModel
@@ -84,10 +81,10 @@ class LoginFragment: BaseFragment(), Tdlib.AuthorizationListener {
 	}
 
 	object LoginViewModel: BaseModel() {
-		public var loginState = mutableStateOf(LOGIN_STATE.PHONE)
-		public val phoneNumber = mutableStateOf("")
-		public val code = mutableStateOf("")
-		public val password = mutableStateOf("")
+		var loginState = mutableStateOf(LOGIN_STATE.PHONE)
+		val phoneNumber = mutableStateOf("")
+		val code = mutableStateOf("")
+		val password = mutableStateOf("")
 
 		fun send(){
 			when (loginState.value) {

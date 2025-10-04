@@ -2,7 +2,6 @@ package ni.shikatu.a50gramm
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.addCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -75,7 +74,7 @@ class MainActivity : ComponentActivity() {
 			_50grammTheme {
 				LaunchedEffect(currentFragment == null) {
 					coroutineScope.launch(Dispatchers.IO) {
-						val t = Tdlib.sendBlocking(TdApi.GetAuthorizationState()) as TdApi.AuthorizationState
+						val t = Tdlib.sendBlocking<TdApi.AuthorizationState>(TdApi.GetAuthorizationState())
 						when(t){
 							is TdApi.AuthorizationStateReady -> {
 								presentFragment(ChatListFragment())

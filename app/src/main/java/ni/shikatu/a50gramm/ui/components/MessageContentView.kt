@@ -1,14 +1,11 @@
 package ni.shikatu.a50gramm.ui.components
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import ni.shikatu.a50gramm.BaseComponent
-import ni.shikatu.a50gramm.tdlib.Tdlib
 import ni.shikatu.a50gramm.ui.components.messagecontent.MessagePhotoView
 import ni.shikatu.a50gramm.ui.components.messagecontent.MessageTextView
 import ni.shikatu.a50gramm.ui.components.messagecontent.MessageVideoView
 import org.drinkless.tdlib.TdApi
-import kotlin.reflect.KClass
 
 class MessageContentView(val message: TdApi.Message): BaseComponent() {
 

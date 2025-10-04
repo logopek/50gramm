@@ -15,7 +15,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import ni.shikatu.a50gramm.BaseComponent
 import ni.shikatu.a50gramm.tdlib.Tdlib
-import ni.shikatu.a50gramm.utlis.toAnnotatedString
 import org.drinkless.tdlib.TdApi
 
 class MessageView(val message: TdApi.Message): BaseComponent() {
@@ -41,7 +40,7 @@ class MessageView(val message: TdApi.Message): BaseComponent() {
 					val userId = (message.senderId as TdApi.MessageSenderUser).userId
 					val user = Tdlib.sendBlocking<TdApi.User>(TdApi.GetUser(userId))
 					runOnUIThread {
-						senderName.value = user.firstName
+						senderName.value = user?.firstName ?: "Unknown"
 					}
 				}
 			}
@@ -50,7 +49,7 @@ class MessageView(val message: TdApi.Message): BaseComponent() {
 					val chatId = (message.senderId as TdApi.MessageSenderChat).chatId
 					val chat = Tdlib.sendBlocking<TdApi.Chat>(TdApi.GetChat(chatId))
 					runOnUIThread {
-						senderName.value = chat.title
+						senderName.value = chat?.title ?: "Unknown"
 					}
 				}
 			}
