@@ -11,6 +11,11 @@ abstract class BaseComponent: BaseModel(){
 		Present()
 	}
 
+	fun createWithoutPresent(): BaseComponent {
+		newComponent()
+		return this;
+	}
+
 	open fun newComponent() {}
 	@Composable
 	abstract fun Present()

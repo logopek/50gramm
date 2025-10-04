@@ -1,6 +1,7 @@
 package ni.shikatu.a50gramm.ui.fragments
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,17 +10,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-
 import ni.shikatu.a50gramm.BaseFragment
 import ni.shikatu.a50gramm.BaseModel
 import ni.shikatu.a50gramm.tdlib.Tdlib
 import ni.shikatu.a50gramm.ui.components.MessageInput
 import ni.shikatu.a50gramm.ui.components.MessageView
+import ni.shikatu.a50gramm.ui.components.types.MessageWrapper
 import ni.shikatu.a50gramm.utlis.ensureType
 import org.drinkless.tdlib.TdApi
 
@@ -29,18 +29,19 @@ class ChatScreenFragment(val chat: TdApi.Chat): BaseFragment(), Tdlib.ChatUpdate
 		viewModel.requestMessages(chat.id)
 		requestActionBar()?.setTitle(chat.title)
 	}
+
 	@Composable
 	override fun Present(paddingValues: PaddingValues) {
 		val state = rememberLazyListState()
-		val messages = remember {
-			derivedStateOf {
-				viewModel.messages.value.sortedByDescending { message -> message.date }
-			}
-		}
 		Column(modifier = Modifier.padding(paddingValues)) {
 			LazyColumn(state = state, modifier = Modifier.weight(1f).fillMaxSize(), verticalArrangement = Arrangement.spacedBy(4.dp), reverseLayout = true) {
-				items(messages.value, key = { it.id }) {
-					MessageView(it).create()
+				items(viewModel.messages, key = { it.message.id }, contentType = {"message"}) {
+					val messageView = remember(it.message.id) {
+						MessageView(it).createWithoutPresent()
+					}
+					Box(Modifier.animateItem()){
+						messageView.create()
+					}
 				}
 			}
 			MessageInput(chat){
@@ -51,23 +52,75 @@ class ChatScreenFragment(val chat: TdApi.Chat): BaseFragment(), Tdlib.ChatUpdate
 
 	}
 
+
+
 	override fun onChatNewMessageUpdate(update: TdApi.UpdateNewMessage) {
-		if (update.message.chatId == chat.id) {
-			viewModel.messages.value = (viewModel.messages.value + update.message)
-				.distinctBy { it.id }
+		update.message.ensureType<TdApi.Message> { message ->
+			runOnDispatchersThread {
+				viewModel.addMessage(message, chat.id)
+			}
+
 		}
 	}
 
 	object ChatScreenViewModel: BaseModel(){
-		val messages = mutableStateOf(listOf<TdApi.Message>())
+		val messages = mutableStateListOf<MessageWrapper>()
 
-		fun requestMessages(chatId: Long, limit: Int = 100, offset: Int = 0){
-			messages.value = listOf()
+		fun addMessage(message: TdApi.Message, chatId: Long){
 			runOnDispatchersThread {
-				//TODO: тдлиб не хочет возвращать больше одного сообщения на первый запрос
-				val messagesNew = Tdlib.sendBlocking<TdApi.Messages>(TdApi.GetChatHistory(chatId, 0, 0, limit, false))
-				messagesNew.ensureType<TdApi.Messages> { it ->
-					messages.value = messages.value + it.messages
+				if (message.chatId != chatId) return@runOnDispatchersThread
+				if (messages.any { it.message.id == message.id }) return@runOnDispatchersThread
+
+				val senderName = when (message.senderId) {
+					is TdApi.MessageSenderUser -> {
+						Tdlib.sendBlocking<TdApi.User>(
+							TdApi.GetUser((message.senderId as TdApi.MessageSenderUser).userId)
+						)?.firstName ?: ""
+					}
+					is TdApi.MessageSenderChat -> {
+						Tdlib.sendBlocking<TdApi.Chat>(
+							TdApi.GetChat((message.senderId as TdApi.MessageSenderChat).chatId)
+						)?.title ?: ""
+					}
+					else -> ""
+				}
+				val bySelf = message.senderId is TdApi.MessageSenderUser &&
+						(message.senderId as TdApi.MessageSenderUser).userId == Tdlib.me?.id
+
+				runOnUIThread {
+					messages.add(0, MessageWrapper(message, bySelf, senderName))
+				}
+			}
+		}
+		fun requestMessages(chatId: Long, limit: Int = 100){
+			messages.clear()
+			runOnDispatchersThread {
+				val messagesNew = Tdlib.sendBlocking<TdApi.Messages>(
+					TdApi.GetChatHistory(chatId, 0, 0, limit, false)
+				)
+				messagesNew.ensureType<TdApi.Messages> { messagesResult ->
+					val messageWrappers = messagesResult.messages.map { msg ->
+						val senderName = when (msg.senderId) {
+							is TdApi.MessageSenderUser -> {
+								Tdlib.sendBlocking<TdApi.User>(
+									TdApi.GetUser((msg.senderId as TdApi.MessageSenderUser).userId)
+								)?.firstName ?: ""
+							}
+							is TdApi.MessageSenderChat -> {
+								Tdlib.sendBlocking<TdApi.Chat>(
+									TdApi.GetChat((msg.senderId as TdApi.MessageSenderChat).chatId)
+								)?.title ?: ""
+							}
+							else -> ""
+						}
+						val bySelf = msg.senderId is TdApi.MessageSenderUser &&
+								(msg.senderId as TdApi.MessageSenderUser).userId == Tdlib.me?.id
+						MessageWrapper(msg, bySelf, senderName)
+					}.sortedByDescending { it.message.date }
+
+					runOnUIThread {
+						messages.addAll(messageWrappers)
+					}
 				}
 			}
 		}
